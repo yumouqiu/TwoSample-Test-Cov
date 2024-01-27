@@ -14,44 +14,20 @@
 
 intermediate<-function(sam1,sam2)
 {
-   
-  Xmeans=colMeans(sam1)
-  Ymeans=colMeans(sam2)
   
-  n1=nrow(sam1)
-  p=ncol(sam1)
-  n2=nrow(sam2)
+  n1 = nrow(sam1)
+  p = ncol(sam1)
+  n2 = nrow(sam2)
    
   CovX = cov(sam1)*(n1-1)/n1
   CovY = cov(sam2)*(n2-1)/n2
   
-  M = NULL
+  Xc = apply(X, 2, function(x) x-mean(x))  # center
+  Yc = apply(Y, 2, function(x) x-mean(x))
+  theta1 = (t(Xc^2) %*% Xc^2)/n1 - CovX^2  # Theta matrix for X
+  theta2 = (t(Yc^2) %*% Yc^2)/n1 - CovY^2  # Theta matrix for Y
+  M = (sig1-sig2)^2/(theta1/n1+theta2/n2)  # M matrix
   
-  for(i in 1:p)
-  {
-  	for(j in i:p)
-  	{
-  		theta1 = 0
-  		theta2 = 0
-  		for(t1 in 1:n1)
-  		{
-  			C_diff = sam1[t1,] - Xmeans
-  			theta = C_diff[i]*C_diff[j]-CovX[i,j] 
-  			theta1 = theta1 + theta*theta
-  		}
-  		for(t1 in 1:n2)
-  		{
-  			C_diff = sam2[t1,] - Ymeans
-  			theta = C_diff[i]*C_diff[j]-CovY[i,j] 
-  			theta2 = theta2 + theta*theta
-  		}
-  		theta1 = theta1/n1
-  		theta2 = theta2/n2
-  		diff = CovX[i,j] - CovY[i,j]
-  		M = c(M,diff*diff/(theta1/n1+theta2/n2))
-  	}
-  }
-  
-  list(CovX,CovY,M)
+  list(CovX, CovY, M[upper.tri(M, diag=T)])
   
 }
